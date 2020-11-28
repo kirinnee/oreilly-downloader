@@ -1,0 +1,4 @@
+#!/bin/sh
+cat - > cookies.json
+python3 safaribooks.py "$1" 1>&2
+cat "$(find . -name "$1".epub)"
