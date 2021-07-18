@@ -1,0 +1,64 @@
+name: Build Docker Image
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+    env:
+      CI_DOCKER_IMAGE: orly
+      CI_DOCKERFILE: Dockerfile
+      CI_DOCKER_CONTEXT: .
+      CI_EXTERNAL_NAME: kirinnee/orly
+
+    steps:
+      - name: Check out Code
+        uses: actions/checkout@v2
+
+      - name: Log into GitHub registry
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login docker.pkg.github.com -u ${{ github.actor }} --password-stdin
+
+      - name: Generate image reference
+        run: |
+          IMAGE_ID=docker.pkg.github.com/${{ github.repository }}/$CI_DOCKER_IMAGE
+          IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
+
+          # Strip git ref prefix from version
+          VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
+
+          # Strip "v" prefix from tag name
+          [[ "${{ github.ref }}" == "refs/tags/"* ]] && VERSION=$(echo $VERSION | sed -e 's/^v//')
+
+          # Use Docker `latest` tag convention
+          [ "$VERSION" == "main" ] && VERSION=latest
+
+          echo IMAGE_ID=$IMAGE_ID
+          echo VERSION=$VERSION
+
+          echo "IMAGE_ID=$IMAGE_ID" >> $GITHUB_ENV
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+
+      - name: Cache Pull
+        run: |
+          docker pull $IMAGE_ID || true
+
+      - name: Build image
+        run: docker build $CI_DOCKER_CONTEXT -f $CI_DOCKERFILE --tag $CI_DOCKER_IMAGE --cache-from=$IMAGE_ID
+
+      - name: Push image
+        run: |
+          IMAGE_REF=${{ env.IMAGE_ID }}:${{ env.VERSION }}
+          echo Docker Image reference: $IMAGE_REF
+          docker tag $CI_DOCKER_IMAGE $IMAGE_REF
+          docker push $IMAGE_REF
+      - name: Log into DockerHub registry
+        run: echo "${{ secrets.DOCKER_TOKEN }}" | docker login -u ${{ secrets.DOCKER_USER }} --password-stdin
+      - name: Push to DockerHub
+        run: |
+          DOCKERHUB_NAME=$CI_EXTERNAL_NAME:latest
+          docker tag $CI_DOCKER_IMAGE $DOCKERHUB_NAME
+          docker push $DOCKERHUB_NAME

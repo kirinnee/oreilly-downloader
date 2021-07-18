@@ -1,0 +1,44 @@
+version: "3"
+
+tasks:
+  build:
+    desc: Builds the docker image
+    cmds:
+      - docker build -t kirinnee/orly:latest .
+  run:
+    deps:
+      - build
+    desc: Runs the docker image after building it
+    cmds:
+      - docker run -i kirinnee/orly:latest {{.CLI_ARGS}}
+  fmt:
+    desc: Run all formatting supported.
+    ignore_error: true
+    summary: |
+      Runs all formatting supported.
+      1. Runs fmt:md, which formats all Markdown using prettier
+      2. Runs fmt:yaml, which formats all YAML using prettier
+      3. Runs fmt:nix, which formats all Nix files with nixpkgs-fmt
+    cmds:
+      - task: fmt:md
+      - task: fmt:yaml
+      - task: fmt:nix
+
+  fmt:md:
+    ignore_error: true
+    desc: Formats Markdown with prettier
+    cmds:
+      - prettier -w "**/*.MD"
+
+  fmt:yaml:
+    ignore_error: true
+    desc: Formats YAML with prettier
+    cmds:
+      - prettier -w "**/*.yaml"
+      - prettier -w "**/*.yml"
+
+  fmt:nix:
+    ignore_error: true
+    desc: Formats Nix files
+    cmds:
+      - nixpkgs-fmt .

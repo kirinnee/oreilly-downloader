@@ -1,0 +1,37 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.0.1
+    hooks:
+      - id: check-yaml
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+      - id: mixed-line-ending
+  - repo: https://github.com/hadolint/hadolint
+    rev: v2.6.0
+    hooks:
+      - id: hadolint
+  - repo: local
+    hooks:
+      - id: json-fmt
+        name: Format JSON with prettier
+        entry: prettier
+        files: ^.*\.json$
+        language: system
+      - id: yaml-fmt
+        name: Format YAML with prettier
+        entry: prettier
+        files: ^.*\.(yaml|yml)$
+        language: system
+
+      - id: md-fmt
+        name: Format Markdown with prettier
+        entry: prettier
+        files: ^.*\.(MD|md)$
+        language: system
+
+      - id: nixpkgs-fmt
+        name: Format NIX files
+        entry: nixpkgs-fmt .
+        files: ^.*\.nix$
+        language: system
+        pass_filenames: false
