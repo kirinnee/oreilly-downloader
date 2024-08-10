@@ -49,12 +49,10 @@ This is done using `Firefox` Browser. Other browsers do not have `Copy All` feat
 
 1. Login as usual to [https://learning.oreilly.com/](https://learning.oreilly.com/)
 2. Open the developer tools with `F12`
-3. Go to `Network` tab in the developer tools
-4. Access the profile page in the browser: [https://learning.oreilly.com/profile/](https://learning.oreilly.com/)
-5. In the `Network` tab, click on the request to `/profile/`. (should be the first few)
-6. Click on the `Cookies` tab in the request information
-7. Right-click on any values under `Request Cookies` text and choose `Copy All`
-8. Paste this into any file. For this demo, we will assume you paste it into `cookie.json`.
+3. Access the profile page in the browser: [https://learning.oreilly.com/profile/](https://learning.oreilly.com/)
+4. Enter the command in the console: 
+`opy(JSON.stringify(document.cookie.split(';').map(c => c.split('=')).map(i => [i[0].trim(), i[1].trim()]).reduce((r, i) => {r[i[0]] = i[1]; return r;}, {})))`
+5. Paste this into any file. For this demo, we will assume you paste it into `cookie.json`.
 
 Here is an example of how a `cookie.json` looks like. You do not need every field, this is just to show the syntax:
 
