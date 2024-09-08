@@ -51,7 +51,7 @@ This is done using `Firefox` Browser. Other browsers do not have `Copy All` feat
 2. Open the developer tools with `F12`
 3. Access the profile page in the browser: [https://learning.oreilly.com/profile/](https://learning.oreilly.com/)
 4. Enter the command in the console: 
-`opy(JSON.stringify(document.cookie.split(';').map(c => c.split('=')).map(i => [i[0].trim(), i[1].trim()]).reduce((r, i) => {r[i[0]] = i[1]; return r;}, {})))`
+`copy(JSON.stringify(document.cookie.split(';').map(c => c.split('=')).map(i => [i[0].trim(), i[1].trim()]).reduce((r, i) => {r[i[0]] = i[1]; return r;}, {})))`
 5. Paste this into any file. For this demo, we will assume you paste it into `cookie.json`.
 
 Here is an example of how a `cookie.json` looks like. You do not need every field, this is just to show the syntax:
