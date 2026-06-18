@@ -1,8 +1,13 @@
 FROM python:3
-RUN apt-get update && apt-get install --no-install-recommends -y git && apt-get clean && rm -rf /var/lib/apt/lists/*
-RUN git clone https://github.com/lorenzodifuccia/safaribooks.git /safaribooks
+
+# This fork vendors a patched safaribooks.py (see ./safaribooks.py) updated for
+# O'Reilly's current v2 API, instead of cloning the now-broken upstream at build time.
 WORKDIR /safaribooks
+
+COPY requirements.txt requirements.txt
 RUN pip3 install --no-cache-dir -r requirements.txt
+
+COPY safaribooks.py safaribooks.py
 COPY sso sso
 COPY login login
-RUN chmod o+x sso && chmod o+x login && mv sso /usr/bin/ && mv login /usr/bin/
+RUN chmod a+rx sso login && mv sso /usr/bin/ && mv login /usr/bin/

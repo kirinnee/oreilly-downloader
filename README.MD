@@ -5,6 +5,34 @@ A CLI to download O'Rielly books as epub, packaged via docker
 Wrapper around [safaribooks](https://github.com/lorenzodifuccia/safaribooks) for simpler
 usage, documentation and distribution. (Due to python being extremely complicated)
 
+## About this fork
+
+The upstream image stopped working because O'Reilly migrated their platform off the
+old `/api/v1/book/...` endpoints (now `404`) and started fronting the API with a bot
+filter. This fork **vendors a patched `safaribooks.py`** (the `Dockerfile` `COPY`s it in
+instead of cloning the broken upstream at build time) with the following changes:
+
+- **v1 → v2 API migration** — book info, chapters and the table of contents now use
+  `/api/v2/epubs/urn:orm:book:<id>/...`, with adapters that translate the new responses
+  back into the shapes the EPUB builder expects.
+- **Expired-token guard** — O'Reilly serves *truncated* content (HTTP 200, preview only)
+  once the `orm-jwt` cookie expires, which silently corrupts the book. The patched
+  `check_login` decodes the token and aborts loudly instead.
+- **SSO-friendly auth check** — tolerates the academic/SSO `/profile/` redirect by
+  falling back to verifying against the book API.
+
+### Build it
+
+```sh
+docker build -t orly:v2 .
+```
+
+Then substitute `orly:v2` for `kirinnee/orly:latest` in the commands below.
+
+> **Heads up:** the `orm-jwt` session token expires fast (~15 min). Export your cookies
+> and run the download **promptly**. The `login` (email/password) path generally no
+> longer works for O'Reilly accounts behind SSO — use the **SSO Login** flow below.
+
 # Requisite
 
 - Docker
@@ -51,7 +79,7 @@ This is done using `Firefox` Browser. Other browsers do not have `Copy All` feat
 2. Open the developer tools with `F12`
 3. Access the profile page in the browser: [https://learning.oreilly.com/profile/](https://learning.oreilly.com/)
 4. Enter the command in the console: 
-`opy(JSON.stringify(document.cookie.split(';').map(c => c.split('=')).map(i => [i[0].trim(), i[1].trim()]).reduce((r, i) => {r[i[0]] = i[1]; return r;}, {})))`
+`copy(JSON.stringify(document.cookie.split(';').map(c => c.split('=')).map(i => [i[0].trim(), i[1].trim()]).reduce((r, i) => {r[i[0]] = i[1]; return r;}, {})))`
 5. Paste this into any file. For this demo, we will assume you paste it into `cookie.json`.
 
 Here is an example of how a `cookie.json` looks like. You do not need every field, this is just to show the syntax:
